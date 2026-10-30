@@ -17,7 +17,7 @@ Not built yet: hand-to-angle mapping, smoothing, and the Bridge link to the STM3
 
 See `notes/benchmarks.md` for the speed tests.
 
-## Why not MediaPipe? (not really important)
+## Why not MediaPipe? [NOTE: Not really important]
 
 We tested it on the board.
 
@@ -33,8 +33,8 @@ We tested it on the board.
 | `camera.py` | Reads the phone stream. Keeps only the newest frame. Reconnects. Stops cleanly |
 | `hand.py` | The tracker. Frame in, 21 points out (or nothing) |
 | `main.py` | Live loop: camera, tracker, print FPS and fingertip |
-| `check_camera.py` | 30-second camera test (not relevant to the main code; just a check) |
-| `check_hand.py` | Photo test. Saves pictures with the points drawn (same thing) |
+| `check_camera.py` | 30-second camera test [NOTE: Not relevant to the main code; just a check] |
+| `check_hand.py` | Photo test. Saves pictures with the points drawn [NOTE: Same thing] |
 | `requirements.txt` | Three pinned packages |
 | `notes/benchmarks.md` | Speed test results |
 
@@ -45,7 +45,7 @@ main.py ──▶ camera.py ──▶ config.py
    └─────▶ hand.py ─────▶ config.py
 ```
 
-## You need (just use mobile data, turn on hotspot, and connect App Lab to the same network)
+## You need [NOTE: Just use mobile data, turn on hotspot, and connect App Lab to the same network]
 
 - Arduino UNO Q (4 GB). A shell on it: App Lab terminal.
 - An Android phone with the **IP Webcam** app.
@@ -63,16 +63,14 @@ If you are using Windows, ask Claude to translate the instructions below. App La
 1. Install **IP Webcam**.
 2. Open **Video preferences**. Set **Video resolution** to **640×480**. A bigger image slows the board.
 3. Turn on the **phone hotspot**.
-4. In IP Webcam, tap **Start server**. The app shows an address, such as `http://192.168.x.x:8080`. In reality, it will be different because it is not a local IP. It should look something like `10.11.19.xx`.
+4. In IP Webcam, tap **Start server**. The app shows an address, such as `http://192.168.x.x:8080`. [NOTE: In reality, it will be different because it is not a local IP. It would look something like `10.11.19.xx`.]
 5. After any change to video settings, tap **Stop server**, then **Start server**.
 
 ## 2. Board setup
 
-Run these on the **board shell**. (bottom right shell icon in App Lab)
+Run these on the **board shell**.
 
-### 2.1 Join the network and check it
-
-This will probably already be working. Run these commands just in case. They only check that your board is actually connected to the hotspot. If App Lab shows that it is connected, skip this section.
+### 2.1 Join the network and check it [NOTE: This will probably already be working. Run these commands just in case. They only check that your board is actually connected to the hotspot. If App Lab shows that it is connected, skip this section.]
 
 ```bash
 nmcli -t -f ACTIVE,SSID dev wifi | grep '^yes'     # which Wi-Fi is the board on?
@@ -96,9 +94,7 @@ curl -I http://<PHONE_IP>:8080/shot.jpg            # expect "200 OK"
 
 "Connection refused" means the server is off. Tap **Start server**.
 
-### 2.2 Install uv
-
-Run this on the board's shell. You can start it at the bottom right in App Lab. Skip this if you already have the board I used, because it is already installed.
+### 2.2 Install uv [NOTE: Run this on the board's shell. You can start it at the bottom right in App Lab. Skip this if you already have the board I used, because it is already installed.]
 
 ```bash
 curl -LsSf https://astral.sh/uv/install.sh | sh
@@ -108,7 +104,7 @@ uv --version
 
 In a new shell, run `source $HOME/.local/bin/env` again.
 
-### 2.3 Get the code
+### 2.3 Get the code [NOTE: Same thing as above.]
 
 ```bash
 git clone https://github.com/krtin-singhvi/gesture-arm.git ~/gesture-arm
@@ -116,7 +112,7 @@ cd ~/gesture-arm
 mkdir -p models probes
 ```
 
-### 2.4 Download the models
+### 2.4 Download the models [NOTE: Same thing again.]
 
 ```bash
 wget -O models/hand_landmarker.task https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task
@@ -134,7 +130,7 @@ hand_landmarks_detector.tflite
 
 (`.task` is a zip file. We only use the two `.tflite` files inside.)
 
-### 2.5 Make the Python environment
+### 2.5 Make the Python environment [NOTE: Same thing again, v3.]
 
 ```bash
 uv venv --python 3.13 .venv
@@ -145,7 +141,7 @@ python -c "import cv2, numpy, ai_edge_litert; print('ok')"
 
 The board's own Python 3.13 is enough. Do not install MediaPipe.
 
-In every new shell, run the following. Please do this to avoid corrupting global Python packages. This is on the board, btw.
+In every new shell, run the following. [NOTE: Please do this to avoid corrupting global Python packages. This is on the board btw.]
 
 ```bash
 cd ~/gesture-arm
@@ -193,7 +189,7 @@ python -m http.server 8000 --directory probes        # Ctrl+C to stop
 
 On a device on the same network, open `http://<BOARD_IP>:8000`. Open `open_out.jpg` and `tilt_out.jpg`. The red points must sit on the real finger joints. `*_crop.jpg` shows what the model saw. The hand must be upright and fully inside it.
 
-The board IP will be the same as the phone IP, or at least it was in my case.
+[NOTE: The board IP will be the same as the phone IP, or at least it was in my case.]
 
 ### 3.3 Live run
 
@@ -241,7 +237,7 @@ Then download the models as in 2.4. Tested on Linux only. If it fails on Windows
 | No hand found, but a hand is in view | Better light, plain background, hand fully in view, palm toward the camera |
 | Points are in the wrong place | Check `*_crop.jpg`. Do not trust the score alone |
 
-## Rules for the code (not important)
+## Rules for the code [NOTE: Not important.]
 
 - Use `opencv-python-headless`. The board has no screen, so never use `cv2.imshow`. Save images instead.
 - The palm detector input must be scaled 0 to 1. The scale −1 to 1 gives confident wrong answers.
