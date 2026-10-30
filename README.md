@@ -17,7 +17,7 @@ Not built yet: hand-to-angle mapping, smoothing, and the Bridge link to the STM3
 
 See `notes/benchmarks.md` for the speed tests.
 
-## Why not MediaPipe?
+## Why not MediaPipe? (not really important)
 
 We tested it on the board.
 
@@ -33,8 +33,8 @@ We tested it on the board.
 | `camera.py` | Reads the phone stream. Keeps only the newest frame. Reconnects. Stops cleanly |
 | `hand.py` | The tracker. Frame in, 21 points out (or nothing) |
 | `main.py` | Live loop: camera, tracker, print FPS and fingertip |
-| `check_camera.py` | 30-second camera test |
-| `check_hand.py` | Photo test. Saves pictures with the points drawn |
+| `check_camera.py` | 30-second camera test | (not relevant to main code just a check)
+| `check_hand.py` | Photo test. Saves pictures with the points drawn | (same thing)
 | `requirements.txt` | Three pinned packages |
 | `notes/benchmarks.md` | Speed test results |
 
@@ -45,29 +45,28 @@ main.py ──▶ camera.py ──▶ config.py
    └─────▶ hand.py ─────▶ config.py
 ```
 
-## You need
+## You need (just use mobile data , and turn on hotspot, and connect App Lab to the same)
 
-- Arduino UNO Q (4 GB). A shell on it: App Lab terminal, or `adb shell`.
+- Arduino UNO Q (4 GB). A shell on it: App Lab terminal.
 - An Android phone with the **IP Webcam** app.
 - A network both can join. The **phone hotspot** is best. Campus Wi-Fi often blocks device-to-device traffic.
 - Internet on the board for setup only (about 1 GB of downloads).
+
+## if you are installing applab on linux, please do see this https://docs.arduino.cc/software/app-lab/setup/linux/, if you are using windows then ask claude to translate whatever is below (applab installation will be easy but everything else is hard)
 
 ## 1. Phone setup (IP Webcam)
 
 1. Install **IP Webcam**.
 2. Open **Video preferences**. Set **Video resolution** to **640×480**. A bigger image slows the board.
-3. Phone Settings → Apps → IP Webcam → Battery → **No restrictions**. Turn on **Autostart**. If you skip this, the phone stops the app when the screen locks.
 4. Turn on the **phone hotspot**.
-5. In IP Webcam, tap **Start server**. The app shows an address, such as `http://192.168.x.x:8080`.
+5. In IP Webcam, tap **Start server**. The app shows an address, such as `http://192.168.x.x:8080`. (in reality it will be different because its not a local ip) (something like 10.11.19.xx)
 6. After any change to video settings, tap **Stop server**, then **Start server**.
-
-Keep the phone charging and upright. Point it at your hand.
 
 ## 2. Board setup
 
 Run these on the **board shell**.
 
-### 2.1 Join the network and check it
+### 2.1 Join the network and check it (probably would be working but just incase, this just checks that your board is actually on the hotspot, if App Lab shows connected just skip all this)
 
 ```bash
 nmcli -t -f ACTIVE,SSID dev wifi | grep '^yes'     # which Wi-Fi is the board on?
@@ -91,7 +90,7 @@ curl -I http://<PHONE_IP>:8080/shot.jpg            # expect "200 OK"
 
 "Connection refused" means the server is off. Tap **Start server**.
 
-### 2.2 Install uv
+### 2.2 Install uv (run this ON the board's shell, you can start it on bottom right in App Lab)(unless you have the one i used because its already installed)
 
 ```bash
 curl -LsSf https://astral.sh/uv/install.sh | sh
@@ -101,7 +100,7 @@ uv --version
 
 In a new shell, run `source $HOME/.local/bin/env` again.
 
-### 2.3 Get the code
+### 2.3 Get the code (same thing as above)
 
 ```bash
 git clone https://github.com/krtin-singhvi/gesture-arm.git ~/gesture-arm
@@ -109,7 +108,7 @@ cd ~/gesture-arm
 mkdir -p models probes
 ```
 
-### 2.4 Download the models
+### 2.4 Download the models (again the same thing)
 
 ```bash
 wget -O models/hand_landmarker.task https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task
@@ -127,7 +126,7 @@ hand_landmarks_detector.tflite
 
 (`.task` is a zip file. We only use the two `.tflite` files inside.)
 
-### 2.5 Make the Python environment
+### 2.5 Make the Python environment (same thing again v3)
 
 ```bash
 uv venv --python 3.13 .venv
@@ -138,14 +137,14 @@ python -c "import cv2, numpy, ai_edge_litert; print('ok')"
 
 The board's own Python 3.13 is enough. Do not install MediaPipe.
 
-In every new shell, run:
+In every new shell, run: (please do this to not corrupt global python packages)(in the board btw)
 
 ```bash
 cd ~/gesture-arm
 source .venv/bin/activate
 ```
 
-### 2.6 Set the camera address
+### 2.6 Set the camera address 
 
 Open `config.py` and set `CAMERA_URL`, or set it for one run:
 
@@ -177,14 +176,14 @@ curl -o probes/none.jpg http://<PHONE_IP>:8080/shot.jpg     # no hand
 python check_hand.py probes/open.jpg probes/tilt.jpg probes/far.jpg probes/none.jpg
 ```
 
-Pass: `HAND` for the first three, `no hand` for the last. Then look at the pictures. A high score does not prove the points are correct.
+Pass: `HAND` for the first three, `no hand` for the last. Then look at the pictures.
 
 ```bash
 hostname -I                                          # the board address
 python -m http.server 8000 --directory probes        # Ctrl+C to stop
 ```
 
-On a device on the same network, open `http://<BOARD_IP>:8000`. Open `open_out.jpg` and `tilt_out.jpg`. The red points must sit on the real finger joints. `*_crop.jpg` shows what the model saw. The hand must be upright and fully inside it.
+On a device on the same network, open `http://<BOARD_IP>:8000`. Open `open_out.jpg` and `tilt_out.jpg`. The red points must sit on the real finger joints. `*_crop.jpg` shows what the model saw. The hand must be upright and fully inside it. (board ip will be same as phone ip, or atleast it was in my case)
 
 ### 3.3 Live run
 
@@ -213,7 +212,7 @@ source .venv/bin/activate
 uv pip install -r requirements.txt
 ```
 
-Then download the models as in 2.4. Tested on Ubuntu only. If it fails on Windows, use WSL. FPS on a laptop is higher. Confirm final numbers on the board.
+Then download the models as in 2.4. Tested on Linux only. If it fails on Windows, use WSL. FPS on a laptop is higher. Confirm final numbers on the board.
 
 ## Troubleshooting
 
@@ -232,7 +231,7 @@ Then download the models as in 2.4. Tested on Ubuntu only. If it fails on Window
 | No hand found, but a hand is in view | Better light, plain background, hand fully in view, palm toward the camera |
 | Points are in the wrong place | Check `*_crop.jpg`. Do not trust the score alone |
 
-## Rules for the code
+## Rules for the code (not imp)
 
 - Use `opencv-python-headless`. The board has no screen, so never use `cv2.imshow`. Save images instead.
 - The palm detector input must be scaled 0 to 1. The scale −1 to 1 gives confident wrong answers.
